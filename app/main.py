@@ -8,9 +8,8 @@ def main():
     # Uncomment this to pass the first stage
     #
     server_socket = socket.create_server(("localhost", 6379), reuse_port=True)
-    conn, addr = server_socket.accept() # wait for client
-    conn.send("+PONG\r\n")
-    # server_socket.sendall("+PONG\r\n")
+    conn = server_socket.accept() # wait for client
+    conn.send("+PONG\r\n".encode())
 
 
 
