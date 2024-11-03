@@ -11,7 +11,7 @@ def main():
     byte_received = 0
     MSG_SIZE = len(b"PING\nPING")
     while byte_received < MSG_SIZE:
-        chunk = conn.recv(min(MSG_SIZE - byte_received), 4)
+        chunk = conn.recv(min(MSG_SIZE - byte_received, 4))
         conn.send(b"+PONG\r\n")
         byte_received += len(chunk)
 
