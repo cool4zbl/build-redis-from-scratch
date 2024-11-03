@@ -9,10 +9,11 @@ def main():
     conn, addr = server_socket.accept() # wait for client
 
     byte_received = 0
-    MSG_SIZE = min(4, len(b"PING\nPING"))
+    MSG_SIZE = len(b"PING\nPING")
     while byte_received < MSG_SIZE:
-        conn.recv(MSG_SIZE - byte_received)
+        chunk = conn.recv(min(MSG_SIZE - byte_received), 4)
         conn.send(b"+PONG\r\n")
+        byte_received += len(chunk)
 
 
 if __name__ == "__main__":
