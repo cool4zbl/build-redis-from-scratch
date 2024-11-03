@@ -9,10 +9,10 @@ def main():
     conn, addr = server_socket.accept() # wait for client
 
     while True:
-        chunk = conn.recv(1024)
-        if not chunk:
+        data = conn.recv(1024)
+        if not data:
             break
-        if chunk == b"PING\r\n":
+        if data == b"*1\r\n$4\r\nPING\r\n":
             conn.send(b"+PONG\r\n")
 
 
