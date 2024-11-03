@@ -8,12 +8,12 @@ def main():
     server_socket = socket.create_server(("localhost", 6379), reuse_port=True)
     conn, addr = server_socket.accept() # wait for client
 
-    byte_received = 0
-    MSG_SIZE = len(b"PING\nPING")
-    while byte_received < MSG_SIZE:
-        chunk = conn.recv(min(MSG_SIZE - byte_received, 4))
-        conn.send(b"+PONG\r\n")
-        byte_received += len(chunk)
+    while True:
+        chunk = conn.recv(1024)
+        if not chunk:
+            break
+        if chunk == b"PING\r\n":
+            conn.send(b"+PONG\r\n")
 
 
 if __name__ == "__main__":
