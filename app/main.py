@@ -12,7 +12,7 @@ def main():
         data = conn.recv(1024)
         if not data:
             break
-        if data.lower().find(b"ping") != -1:
+        if data.decode().lower().find("ping") != -1:
             conn.send(b"+PONG\r\n")
 
 
