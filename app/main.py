@@ -8,6 +8,8 @@ def main():
     server_socket = socket.create_server(("localhost", 6379), reuse_port=True)
     while True:
         conn, addr = server_socket.accept() # wait for client
+        if conn:
+            print("Connection from: ", addr)
 
         while True:
             data = conn.recv(1024)
