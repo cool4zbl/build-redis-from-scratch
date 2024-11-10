@@ -11,10 +11,9 @@ async def handle_client(reader, writer):
                 break
             print(f"Received {data.decode()!r} from {addr}. \n")
 
-            if data == b"*1\r\n$4\r\nPING\r\n":
-                response = b"+PONG\r\n"
-                writer.write(response)
-                await writer.drain()
+            response = parse_request(data)
+            writer.write(response)
+            await writer.drain()
     except asyncio.CancelledError:
         pass
     finally:
@@ -23,26 +22,38 @@ async def handle_client(reader, writer):
         print(f"Connection from {addr} closed. \n")
 
 def parse_request(data):
-    # *2\r\n$4\r\nECHO\r\n$3\r\nhey\r\n
     parts = data.split(b"\r\n")
     type = parts[0][0]
 
-    switcher = {
+    data_type_switcher = {
         b"*": "array",
         b"$": "bulk_string",
         b"+": "simple_string",
         b"-": "error",
         b":": "integer"
     }
+    command_switcher = {
+        "PING": handle_ping,
+        "ECHO": handle_echo
+    }
 
-    if switcher.get(type, "error") == "error":
+    if data_type_switcher.get(type, "error") == "error":
         return None
 
-    if switcher.get(type) == "array":
+    if data_type_switcher.get(type) == "array":
         # num_args = int(parts[0][1:])
         command = parts[2].decode()
-        if command == "ECHO":
-            return parts[4]
+        res = command_switcher.get(command, "error")(parts)
+        return res
+    else:
+        return None
+
+def handle_ping():
+    return b"+PONG\r\n"
+
+def handle_echo(parts):
+    # e.g. *2\r\n$4\r\nECHO\r\n$3\r\nhey\r\n
+    return parts[4]
 
 
 async def main():
