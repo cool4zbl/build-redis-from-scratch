@@ -25,8 +25,6 @@ def parse_request(data):
     parts = data.split(b"\r\n")
     print(f"Received parts, {parts}")
 
-    type = parts[0][0]
-
     data_type_switcher = {
         b"*": "array",
         b"$": "bulk_string",
@@ -39,12 +37,13 @@ def parse_request(data):
         "ECHO": handle_echo
     }
 
+    type = parts[0][0]
     if data_type_switcher.get(type, "error") == "error":
         return None
 
     if data_type_switcher.get(type) == "array":
         # num_args = int(parts[0][1:])
-        command = parts[2]
+        command = parts[2].decode().upper()
         res = command_switcher.get(command, "error")(parts)
         return res
     else:
@@ -54,6 +53,7 @@ def handle_ping():
     return b"+PONG\r\n"
 
 def handle_echo(parts):
+    print(f"Received ECHO string, {parts[4]}")
     # e.g. *2\r\n$4\r\nECHO\r\n$3\r\nhey\r\n
     return parts[4]
 
