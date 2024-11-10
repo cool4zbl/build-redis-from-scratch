@@ -27,7 +27,7 @@ async def main():
     print("Logs from your program will appear here!")
 
     server = await asyncio.start_server(handle_client, host="localhost", port=6379, reuse_port=True)
-    addr = server.sockets
+    addr = server.sockets[0].getsockname()
     print(f"Server started at {addr}\n")
 
     async with server:
