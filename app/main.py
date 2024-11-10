@@ -56,7 +56,7 @@ def handle_ping():
 def handle_echo(parts):
     print(f"Received ECHO string, {parts[4]}")
     # e.g. *2\r\n$4\r\nECHO\r\n$3\r\nhey\r\n
-    return parts[4]
+    return f"${len(parts[4].decode())}\r\n{parts[4].decode()}\r\n".encode()
 
 
 async def main():
