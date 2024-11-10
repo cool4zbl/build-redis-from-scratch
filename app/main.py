@@ -44,7 +44,7 @@ def parse_request(data):
 
     if data_type_switcher.get(type) == "array":
         # num_args = int(parts[0][1:])
-        command = parts[2].decode()
+        command = parts[2]
         res = command_switcher.get(command, "error")(parts)
         return res
     else:
