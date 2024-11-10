@@ -37,7 +37,7 @@ def parse_request(data):
         "ECHO": handle_echo
     }
 
-    type = data_type_switcher.get(parts[0].decode()[0], "error")
+    type = data_type_switcher.get(parts[0][0:1], "error")
     if type == "error":
         print("Invalid request, no valid data type found.")
         return None
