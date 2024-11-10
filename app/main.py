@@ -50,7 +50,7 @@ def parse_request(data):
     else:
         return None
 
-def handle_ping():
+def handle_ping(parts):
     return b"+PONG\r\n"
 
 def handle_echo(parts):
