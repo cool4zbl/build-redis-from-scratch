@@ -2,14 +2,15 @@ import asyncio
 
 async def handle_client(reader, writer):
     addr = writer.get_extra_info("peername")
-    print(f"Connection from {addr}.")
+    print(f"Connection from {addr}. \n")
 
     try:
         while True:
             data = await reader.read(1024)
             if not data:
                 break
-            print(f"Received {data.decode()!r} from {addr}.")
+            print(f"Received {data.decode()!r} from {addr}. \n")
+
             if data == b"*1\r\n$4\r\nPING\r\n":
                 response = b"+PONG\r\n"
                 writer.write(response)
@@ -19,7 +20,7 @@ async def handle_client(reader, writer):
     finally:
         writer.close()
         await writer.wait_closed()
-        print(f"Connection from {addr} closed.")
+        print(f"Connection from {addr} closed. \n")
 
 async def main():
     # You can use print statements as follows for debugging, they'll be visible when running tests.
@@ -27,10 +28,13 @@ async def main():
 
     server = await asyncio.start_server(handle_client, host="localhost", port=6379, reuse_port=True)
     addr = server.sockets
-    print(f"Server started at {addr}")
+    print(f"Server started at {addr}\n")
 
     async with server:
         await server.serve_forever()
 
 if __name__ == "__main__":
-    main()
+    try:
+        asyncio.run(main())
+    except KeyboardInterrupt:
+        print("\nServer stopped.")
