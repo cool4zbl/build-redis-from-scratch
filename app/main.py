@@ -37,11 +37,12 @@ def parse_request(data):
         "ECHO": handle_echo
     }
 
-    type = parts[0][0]
-    if data_type_switcher.get(type, "error") == "error":
+    type = data_type_switcher.get(parts[0].decode()[0], "error")
+    if type == "error":
+        print("Invalid request, no valid data type found.")
         return None
-
-    if data_type_switcher.get(type) == "array":
+    if type == "array":
+        print("Received an array.")
         # num_args = int(parts[0][1:])
         command = parts[2].decode().upper()
         res = command_switcher.get(command, "error")(parts)
