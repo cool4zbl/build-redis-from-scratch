@@ -23,6 +23,8 @@ async def handle_client(reader, writer):
 
 def parse_request(data):
     parts = data.split(b"\r\n")
+    print(f"Received parts, {parts}")
+
     type = parts[0][0]
 
     data_type_switcher = {
