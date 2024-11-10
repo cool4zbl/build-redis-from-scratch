@@ -22,6 +22,29 @@ async def handle_client(reader, writer):
         await writer.wait_closed()
         print(f"Connection from {addr} closed. \n")
 
+def parse_request(data):
+    # *2\r\n$4\r\nECHO\r\n$3\r\nhey\r\n
+    parts = data.split(b"\r\n")
+    type = parts[0][0]
+
+    switcher = {
+        b"*": "array",
+        b"$": "bulk_string",
+        b"+": "simple_string",
+        b"-": "error",
+        b":": "integer"
+    }
+
+    if switcher.get(type, "error") == "error":
+        return None
+
+    if switcher.get(type) == "array":
+        # num_args = int(parts[0][1:])
+        command = parts[2].decode()
+        if command == "ECHO":
+            return parts[4]
+
+
 async def main():
     # You can use print statements as follows for debugging, they'll be visible when running tests.
     print("Logs from your program will appear here!")
