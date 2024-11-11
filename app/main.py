@@ -1,5 +1,21 @@
 import asyncio
 
+class Cache:
+    def __init__(self):
+        self.cache = {}
+
+    def set(self, key, value):
+        self.cache[key] = value
+
+    def get(self, key):
+        return self.cache.get(key)
+
+    def delete(self, key):
+        return self.cache.pop(key, None)
+
+    def flush(self):
+        self.cache.clear()
+
 async def handle_client(reader, writer):
     addr = writer.get_extra_info("peername")
     print(f"Connection from {addr}. \n")
@@ -34,7 +50,9 @@ def parse_request(data):
     }
     command_switcher = {
         "PING": handle_ping,
-        "ECHO": handle_echo
+        "ECHO": handle_echo,
+        "SET": handle_set,
+        "GET": handle_get
     }
 
     type = data_type_switcher.get(parts[0][0:1], "error")
@@ -57,6 +75,19 @@ def handle_echo(parts):
     print(f"Received ECHO string, {parts[4]}")
     # e.g. *2\r\n$4\r\nECHO\r\n$3\r\nhey\r\n
     return f"${len(parts[4].decode())}\r\n{parts[4].decode()}\r\n".encode()
+
+cache = Cache()
+def handle_set(parts):
+    key, value = parts[4].decode(), parts[6].decode()
+    print(f"Received SET command, key={key} and value={value}")
+    cache.set(key, value)
+    return b"+OK\r\n"
+
+def handle_get(parts):
+    key = parts[4].decode()
+    print(f"Received GET command, key={key}")
+    value = cache.get(key)
+    return f"${len(value)}\r\n{value}\r\n".encode()
 
 
 async def main():
