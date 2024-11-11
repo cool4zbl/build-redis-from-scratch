@@ -87,7 +87,7 @@ def handle_get(parts):
     key = parts[4].decode()
     print(f"Received GET command, key={key}")
     value = cache.get(key)
-    return f"${len(value)}\r\n{value}\r\n".encode()
+    return f"${len(value)}\r\n{value}\r\n".encode() if value else b"$-1\r\n"
 
 
 async def main():
