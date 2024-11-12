@@ -87,11 +87,11 @@ def handle_echo(parts):
 
 cache = Cache()
 def handle_set(parts):
-    # e.g. *3\r\n$3\r\nSET\r\n$4\r\nkey1\r\n$6\r\nvalue1\r\n$2\r\nPX\r\n:100\r\n
+    # e.g. "*5\r\n$3\r\nSET\r\n$6\r\nbanana\r\n$9\r\nblueberry\r\n$2\r\npx\r\n$3\r\n100\r\n"
     key, value = parts[4].decode(), parts[6].decode()
     print(f"Received SET command, key={key} and value={value}", parts[8].decode(), parts[9], parts[10])
-    if parts[8].decode() == "PX":
-        ttl = int(parts[9][1:].decode())
+    if parts[8].decode().upper() == "PX":
+        ttl = int(parts[10])
         print(f"Received TTL, {ttl}")
         asyncio.create_task(cache.set_with_ttl(key, value, ttl))
     else:
