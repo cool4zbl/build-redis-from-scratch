@@ -7,6 +7,14 @@ class Cache:
     def set(self, key, value):
         self.cache[key] = value
 
+    async def set_with_ttl(self, key, value, ttl):
+        self.cache[key] = value
+        await asyncio.create_task(self.expire(key, ttl))
+
+    async def expire(self, key, ttl):
+        await asyncio.sleep(ttl / 1000)
+        self.cache.pop(key, None)
+
     def get(self, key):
         return self.cache.get(key)
 
@@ -31,7 +39,7 @@ async def handle_client(reader, writer):
             writer.write(response)
             await writer.drain()
     except asyncio.CancelledError:
-        pass
+        print(f"Connection from {addr} cancelled. \n")
     finally:
         writer.close()
         await writer.wait_closed()
@@ -39,7 +47,8 @@ async def handle_client(reader, writer):
 
 def parse_request(data):
     parts = data.split(b"\r\n")
-    print(f"Received parts, {parts}")
+
+    print(f"Received request data, {parts}")
 
     data_type_switcher = {
         b"*": "array",
@@ -78,9 +87,15 @@ def handle_echo(parts):
 
 cache = Cache()
 def handle_set(parts):
+    # e.g. *3\r\n$3\r\nSET\r\n$4\r\nkey1\r\n$6\r\nvalue1\r\n$2\r\nPX\r\n:100\r\n
     key, value = parts[4].decode(), parts[6].decode()
-    print(f"Received SET command, key={key} and value={value}")
-    cache.set(key, value)
+    print(f"Received SET command, key={key} and value={value}", parts[8].decode(), parts[9], parts[10])
+    if parts[8].decode() == "PX":
+        ttl = int(parts[9][1:].decode())
+        print(f"Received TTL, {ttl}")
+        asyncio.create_task(cache.set_with_ttl(key, value, ttl))
+    else:
+        cache.set(key, value)
     return b"+OK\r\n"
 
 def handle_get(parts):
