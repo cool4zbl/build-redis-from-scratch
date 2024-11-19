@@ -105,11 +105,7 @@ def handle_get(parts):
     value = cache.get(key)
     return f"${len(value)}\r\n{value}\r\n".encode() if value else b"$-1\r\n"
 
-
-async def main():
-    # You can use print statements as follows for debugging, they'll be visible when running tests.
-    print("Logs from your program will appear here!")
-
+async def run_server():
     server = await asyncio.start_server(handle_client, host="localhost", port=6379, reuse_port=True)
     addr = server.sockets[0].getsockname()
     print(f"Server started at {addr}\n")
@@ -117,8 +113,13 @@ async def main():
     async with server:
         await server.serve_forever()
 
-if __name__ == "__main__":
+def main():
+    # You can use print statements as follows for debugging, they'll be visible when running tests.
+    print("Logs from your program will appear here!")
     try:
-        asyncio.run(main())
+        asyncio.run(run_server())
     except KeyboardInterrupt:
         print("\nServer stopped.")
+
+if __name__ == "__main__":
+    main()
