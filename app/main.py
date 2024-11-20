@@ -28,8 +28,8 @@ class Cache:
 
 default_dir, default_dbfilename = "/tmp/redis-files", "dump.rdb"
 configs = {
-    "redis_dir": default_dir,
-    "db_filename": default_dbfilename,
+    "dir": default_dir,
+    "dbfilename": default_dbfilename,
 }
 
 async def handle_client(reader, writer):
@@ -117,11 +117,13 @@ def handle_get(parts):
 def handle_config(parts):
     command, key = parts[4].decode().upper(), parts[6].decode()
     if command == 'GET':
-        match key:
-            case 'dir':
-                return f"${len(configs["redis_dir"])}\r\n{configs["redis_dir"]}\r\n".encode()
-            case 'dbfilename':
-                return f"${len(configs["db_filename"])}\r\n{configs["db_filename"]}\r\n".encode()
+        # *2\r\n$3\r\ndir\r\n$16\r\n/tmp/redis-files\r\n
+        return f"*2\r\n${len(key)}\r\n{key}${len(configs[key])}\r\n{configs[key]}\r\n".encode()
+        # match key:
+        #     case 'dir':
+        #         return f"${len(configs["dir"])}\r\n{configs["dir"]}\r\n".encode()
+        #     case 'dbfilename':
+        #         return f"${len(configs["dbfilename"])}\r\n{configs["dbfilename"]}\r\n".encode()
 
 async def run_server():
     server = await asyncio.start_server(handle_client, host="localhost", port=6379, reuse_port=True)
@@ -139,8 +141,8 @@ def main():
     parser.add_argument("--dbfilename", type=str, default=default_dbfilename, help="Redis RDB dir")
 
     args = parser.parse_args()
-    configs["redis_dir"] = args.dir
-    configs["db_filename"] = args.dbfilename
+    configs["dir"] = args.dir
+    configs["dbfilename"] = args.dbfilename
 
     try:
         asyncio.run(run_server())
