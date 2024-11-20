@@ -1,4 +1,5 @@
 import asyncio
+import argparse
 
 class Cache:
     def __init__(self):
@@ -23,6 +24,13 @@ class Cache:
 
     def flush(self):
         self.cache.clear()
+
+
+default_dir, default_dbfilename = "/tmp/redis-files", "dump.rdb"
+configs = {
+    "redis_dir": default_dir,
+    "db_filename": default_dbfilename,
+}
 
 async def handle_client(reader, writer):
     addr = writer.get_extra_info("peername")
@@ -61,7 +69,8 @@ def parse_request(data):
         "PING": handle_ping,
         "ECHO": handle_echo,
         "SET": handle_set,
-        "GET": handle_get
+        "GET": handle_get,
+        "CONFIG": handle_config
     }
 
     type = data_type_switcher.get(parts[0][0:1], "error")
@@ -105,6 +114,15 @@ def handle_get(parts):
     value = cache.get(key)
     return f"${len(value)}\r\n{value}\r\n".encode() if value else b"$-1\r\n"
 
+def handle_config(parts):
+    command, key = parts[4].decode().upper(), parts[6].decode()
+    if command == 'GET':
+        match key:
+            case 'dir':
+                return f"${len(configs["redis_dir"])}\r\n{configs["redis_dir"]}\r\n".encode()
+            case 'dbfilename':
+                return f"${len(configs["db_filename"])}\r\n{configs["db_filename"]}\r\n".encode()
+
 async def run_server():
     server = await asyncio.start_server(handle_client, host="localhost", port=6379, reuse_port=True)
     addr = server.sockets[0].getsockname()
@@ -116,6 +134,14 @@ async def run_server():
 def main():
     # You can use print statements as follows for debugging, they'll be visible when running tests.
     print("Logs from your program will appear here!")
+    parser = argparse.ArgumentParser(description="Parse Redis cli commands")
+    parser.add_argument("--dir", type=str, default=default_dir, help="Redis RDB dir")
+    parser.add_argument("--dbfilename", type=str, default=default_dbfilename, help="Redis RDB dir")
+
+    args = parser.parse_args()
+    configs["redis_dir"] = args.dir
+    configs["db_filename"] = args.dbfilename
+
     try:
         asyncio.run(run_server())
     except KeyboardInterrupt:
