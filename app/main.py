@@ -118,7 +118,7 @@ def handle_config(parts):
     command, key = parts[4].decode().upper(), parts[6].decode()
     if command == 'GET':
         # *2\r\n$3\r\ndir\r\n$16\r\n/tmp/redis-files\r\n
-        return f"*2\r\n${len(key)}\r\n{key}${len(configs[key])}\r\n{configs[key]}\r\n".encode()
+        return f"*2\r\n${len(key)}\r\n{key}\r\n${len(configs[key])}\r\n{configs[key]}\r\n".encode()
         # match key:
         #     case 'dir':
         #         return f"${len(configs["dir"])}\r\n{configs["dir"]}\r\n".encode()
