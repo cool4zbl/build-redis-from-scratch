@@ -26,10 +26,9 @@ class Cache:
         self.cache.clear()
 
 
-default_dir, default_dbfilename = "/tmp/redis-files", "dump.rdb"
 configs = {
-    "dir": default_dir,
-    "dbfilename": default_dbfilename,
+    "dir":  "/tmp/redis-files",
+    "dbfilename":  "dump.rdb",
 }
 
 async def handle_client(reader, writer):
@@ -117,13 +116,8 @@ def handle_get(parts):
 def handle_config(parts):
     command, key = parts[4].decode().upper(), parts[6].decode()
     if command == 'GET':
-        # *2\r\n$3\r\ndir\r\n$16\r\n/tmp/redis-files\r\n
+        # e.g. *2\r\n$3\r\ndir\r\n$16\r\n/tmp/redis-files\r\n
         return f"*2\r\n${len(key)}\r\n{key}\r\n${len(configs[key])}\r\n{configs[key]}\r\n".encode()
-        # match key:
-        #     case 'dir':
-        #         return f"${len(configs["dir"])}\r\n{configs["dir"]}\r\n".encode()
-        #     case 'dbfilename':
-        #         return f"${len(configs["dbfilename"])}\r\n{configs["dbfilename"]}\r\n".encode()
 
 async def run_server():
     server = await asyncio.start_server(handle_client, host="localhost", port=6379, reuse_port=True)
@@ -134,8 +128,8 @@ async def run_server():
         await server.serve_forever()
 
 def main():
-    # You can use print statements as follows for debugging, they'll be visible when running tests.
     print("Logs from your program will appear here!")
+
     parser = argparse.ArgumentParser(description="Parse Redis cli commands")
     parser.add_argument("--dir", type=str, default=default_dir, help="Redis RDB dir")
     parser.add_argument("--dbfilename", type=str, default=default_dbfilename, help="Redis RDB dir")
