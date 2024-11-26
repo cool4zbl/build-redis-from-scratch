@@ -25,10 +25,10 @@ class Cache:
     def flush(self):
         self.cache.clear()
 
-
+default_dir, default_dbfilename = "/tmp/redis-files", "dump.rdb"
 configs = {
-    "dir":  "/tmp/redis-files",
-    "dbfilename":  "dump.rdb",
+    "dir": default_dir,
+    "dbfilename": default_dbfilename,
 }
 
 async def handle_client(reader, writer):
